@@ -1,4 +1,7 @@
-# Astrocrash - 1
+# # # # # # # # # #
+# Astrocrash game #
+# # # # # # # # # #
+
 import math, random
 from livewires import games, color
 
@@ -55,10 +58,10 @@ class Asteroid(Wrapper):
     SPAWN = 2
     POINTS = 30
     total = 0
-    images = {SMALL : games.load_image("asteroid_small.bmp"),
-              MEDIUM : games.load_image("asteroid_med.bmp"),
-              LARGE : games.load_image("asteroid_big.bmp"),
-              POWERFUL : games.load_image("asteroid_powerful.bmp")}
+    images = {SMALL : games.load_image("images/asteroid_small.bmp"),
+              MEDIUM : games.load_image("images/asteroid_med.bmp"),
+              LARGE : games.load_image("images/asteroid_big.bmp"),
+              POWERFUL : games.load_image("images/asteroid_powerful.bmp")}
     SPEED = 2
 
     def __init__(self, game, x, y, size, lifes):
@@ -101,8 +104,8 @@ class Asteroid(Wrapper):
 
 class Ship(Collider):
     """ Player's ship """
-    image = games.load_image("ship.bmp")
-    sound = games.load_sound("thrust.wav")
+    image = games.load_image("images/ship.bmp")
+    sound = games.load_sound("sounds/thrust.wav")
     ROTATION_STEP = 5
     VELOCITY_STEP = .07
     MISSILE_DELAY = 20
@@ -168,8 +171,8 @@ class Ship(Collider):
 
 class Missile(Collider):
     """ A missile launched by the player's ship """
-    image = games.load_image("missile.bmp")
-    sound = games.load_sound("missile.wav")
+    image = games.load_image("images/missile.bmp")
+    sound = games.load_sound("sounds/missile.wav")
     BUFFER = 40
     VELOCITY_FACTOR = 12
     LIFETIME = 30
@@ -209,16 +212,16 @@ class Missile(Collider):
 
 class Explosion(games.Animation):
     """ Animationed explosion """
-    sound = games.load_sound("explosion.wav")
-    images = ["explosion1.bmp",
-              "explosion2.bmp",
-              "explosion3.bmp",
-              "explosion4.bmp",
-              "explosion5.bmp",
-              "explosion6.bmp",
-              "explosion7.bmp",
-              "explosion8.bmp",
-              "explosion9.bmp"]
+    sound = games.load_sound("sounds/explosion.wav")
+    images = ["images/explosion1.bmp",
+              "images/explosion2.bmp",
+              "images/explosion3.bmp",
+              "images/explosion4.bmp",
+              "images/explosion5.bmp",
+              "images/explosion6.bmp",
+              "images/explosion7.bmp",
+              "images/explosion8.bmp",
+              "images/explosion9.bmp"]
 
     def __init__(self, x, y):
         super(Explosion, self).__init__(images = Explosion.images,
@@ -236,7 +239,7 @@ class Game():
         self.level = 0
         
         # load sound for level advance
-        self.sound = games.load_sound("level.wav")
+        self.sound = games.load_sound("sounds/level.wav")
         
         # create score
         self.score = games.Text(value = 0,
@@ -256,11 +259,11 @@ class Game():
     def play(self):
         """ Starts game """
         # begin music theme
-        games.music.load("theme.mid")
+        games.music.load("sounds/theme.mid")
         games.music.play(-1)
 
         # load and set background
-        nebula_image = games.load_image("nebula.jpg")
+        nebula_image = games.load_image("images/nebula.png")
         games.screen.background = nebula_image
 
         # advance to level 1
@@ -346,24 +349,9 @@ class Game():
                                   color = color.blue,
                                   x = games.screen.width / 2,
                                   y = games.screen.height / 2 - 50,
+                                  # lifetime = 3 * games.screen.fps,
                                   is_collideable = False)
         games.screen.add(self.score)
-
-        # best score
-        """f = open("record.txt")
-        record = f.readline()
-        if self.score.value > record:
-            f.write(self.score.value)
-            record = self.score.value
-        input_record = "Best score: " + str(record)
-        f.close()
-        self.records = games.Text(value = input_record,
-                                  size = 80,
-                                  color = color.blue,
-                                  x = games.screen.width / 2,
-                                  y = games.screen.height / 2 + 50,
-                                  is_collideable = False)
-        games.screen.add(self.records)"""
 
 
 def main():
