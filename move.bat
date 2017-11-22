@@ -1,0 +1,2 @@
+python move.py
+pause
