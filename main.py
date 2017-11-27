@@ -8,22 +8,23 @@ import operator
 from livewires import games, color
 
 
-games.init(screen_width = 640, screen_height = 480, fps = 50)
+games.init(screen_width=640, screen_height=480, fps=50)
+
 
 class Wrapper(games.Sprite):
     """ Sprite, which wraps around the screen """
-    
+
     def update(self):
         """ Wrap sprite around screen """
         if self.top > games.screen.height:
             self.bottom = 0
-            
+
         if self.bottom < 0:
             self.top = games.screen.height
-            
+
         if self.left > games.screen.width:
             self.right = 0
-            
+
         if self.right < 0:
             self.left = games.screen.width
 
@@ -34,7 +35,7 @@ class Wrapper(games.Sprite):
 
 class Collider(Wrapper):
     """ A wraper that can collide with another object """
-    
+
     def update(self):
         """ Check for overlapping sprites """
         super(Collider, self).update()
@@ -47,10 +48,10 @@ class Collider(Wrapper):
 
     def die(self):
         """ Destroys object with an explosion """
-        new_explosion = Explosion(x = self.x, y = self.y)
+        new_explosion = Explosion(x=self.x, y=self.y)
         games.screen.add(new_explosion)
         self.destroy()
-            
+
 
 class Asteroid(Wrapper):
     """ Moving asteroid on the screen """
@@ -61,10 +62,10 @@ class Asteroid(Wrapper):
     SPAWN = 2
     POINTS = 30
     total = 0
-    images = {SMALL : games.load_image("images/asteroid_small.bmp"),
-              MEDIUM : games.load_image("images/asteroid_med.bmp"),
-              LARGE : games.load_image("images/asteroid_big.bmp"),
-              POWERFUL : games.load_image("images/asteroid_powerful.bmp")}
+    images = {SMALL: games.load_image("images/asteroid_small.bmp"),
+              MEDIUM: games.load_image("images/asteroid_med.bmp"),
+              LARGE: games.load_image("images/asteroid_big.bmp"),
+              POWERFUL: games.load_image("images/asteroid_powerful.bmp")}
     SPEED = 2
 
     def __init__(self, game, x, y, size, lifes):
@@ -72,12 +73,14 @@ class Asteroid(Wrapper):
         self.lifes = lifes
         Asteroid.total += 1
         self.asteroids = []
-        
+
         super(Asteroid, self).__init__(
-            image = Asteroid.images[size],
-            x = x, y = y,
-            dx = random.choice([-1, 1]) * Asteroid.SPEED * random.random() / size * 2.5,
-            dy = random.choice([-1, 1]) * Asteroid.SPEED * random.random() / size * 2.5)
+            image=Asteroid.images[size],
+            x=x, y=y,
+            dx=random.choice([-1, 1]) * Asteroid.SPEED *
+            random.random() / size * 2.5,
+            dy=random.choice([-1, 1]) * Asteroid.SPEED *
+            random.random() / size * 2.5)
 
         self.game = game
         self.size = size
@@ -88,19 +91,19 @@ class Asteroid(Wrapper):
 
         self.game.score.value += int(Asteroid.POINTS / self.size)
         self.game.score.right = games.screen.width - 10
-        
+
         # if size of asteroid isn't small, replace with two smaller asteroids
         if self.size != Asteroid.SMALL and self.size != Asteroid.POWERFUL:
             for i in range(Asteroid.SPAWN):
-                new_asteroid = Asteroid(game = self.game,
-                                        x = self.x,
-                                        y = self.y,
-                                        size = self.size - 1,
-                                        lifes = 1)
+                new_asteroid = Asteroid(game=self.game,
+                                        x=self.x,
+                                        y=self.y,
+                                        size=self.size - 1,
+                                        lifes=1)
                 games.screen.add(new_asteroid)
                 self.asteroids.append(new_asteroid)
 
-        # if all asteroids are gone, advance to next level    
+        # if all asteroids are gone, advance to next level
         if Asteroid.total == 0:
             self.game.advance()
 
@@ -108,8 +111,8 @@ class Asteroid(Wrapper):
 
     def totally_die(self):
         """
-        Destroys asteroid without adding smaller asteroids on the screen 
-        """     
+        Destroys asteroid without adding smaller asteroids on the screen
+        """
         super(Asteroid, self).die()
 
     def get_asteroids(self):
@@ -128,14 +131,14 @@ class Ship(Collider):
 
     def __init__(self, game, x, y):
         """ Initialize space ship sprite """
-        super(Ship, self).__init__(image = Ship.image, x = x, y = y)
+        super(Ship, self).__init__(image=Ship.image, x=x, y=y)
         self.game = game
         self.missile_wait = 0
 
     def update(self):
         """ Rotate based on key pressed """
         super(Ship, self).update()
-        
+
         # rotate based on left and right arrow keys
         if games.keyboard.is_pressed(games.K_LEFT):
             self.angle -= Ship.ROTATION_STEP
@@ -145,7 +148,7 @@ class Ship(Collider):
         # move ship
         if games.keyboard.is_pressed(games.K_UP):
             Ship. sound.play()
-            
+
             # change velocity components based on ship's angle
             angle = self.angle * math.pi / 180  # convert to radians
             self.dx += Ship.VELOCITY_STEP * math.sin(angle)
@@ -157,7 +160,7 @@ class Ship(Collider):
 
         if games.keyboard.is_pressed(games.K_DOWN):
             Ship. sound.play()
-            
+
             # change velocity components based on ship's angle
             angle = self.angle * math.pi / 180  # convert to radians
             self.dx -= Ship.VELOCITY_STEP * math.sin(angle)
@@ -176,7 +179,6 @@ class Ship(Collider):
             new_missile = Missile(self.x, self.y, self.angle)
             games.screen.add(new_missile)
             self.missile_wait = Ship.MISSILE_DELAY
-            
 
     def die(self):
         """ Destroy ship and end the game """
@@ -210,15 +212,15 @@ class Missile(Collider):
         dy = Missile.VELOCITY_FACTOR * -math.cos(angle)
 
         # create the missile
-        super(Missile, self).__init__(image = Missile.image,
-                                      x = x, y = y,
-                                      dx = dx, dy = dy)
+        super(Missile, self).__init__(image=Missile.image,
+                                      x=x, y=y,
+                                      dx=dx, dy=dy)
         self.lifetime = Missile.LIFETIME
 
     def update(self):
         """ Move the missile """
         super(Missile, self).update()
-        
+
         # if lifetime is up, destroy the missile
         self.lifetime -= 1
         if self.lifetime == 0:
@@ -239,14 +241,14 @@ class Explosion(games.Animation):
               "images/explosion9.bmp"]
 
     def __init__(self, x, y):
-        super(Explosion, self).__init__(images = Explosion.images,
-                                        x = x, y = y,
-                                        repeat_interval = 2, n_repeats = 1,
-                                        is_collideable = False)
+        super(Explosion, self).__init__(images=Explosion.images,
+                                        x=x, y=y,
+                                        repeat_interval=2, n_repeats=1,
+                                        is_collideable=False)
         Explosion.sound.play()
 
 
-## 
+##
 # Top scores after end of the game
 ##
 class Username(games.Text):
@@ -256,14 +258,13 @@ class Username(games.Text):
                  value, size=60,
                  color=color.black,
                  x=games.screen.width/2,
-                 y=games.screen.height/2, 
+                 y=games.screen.height/2,
                  delay=5):
-        
-        super(Username, self).__init__(
-            value = value,
-            size = size,
-            color = color,
-            x = x, y = y)
+
+        super(Username, self).__init__(value=value,
+                                       size=size,
+                                       color=color,
+                                       x=x, y=y)
 
         self.filename = filename
         self.score = str(score)
@@ -280,16 +281,19 @@ class Username(games.Text):
 
         # Enter letters
         for char_code in alphabet:
-            if games.keyboard.is_pressed(char_code) and self.time_remain == 0 and len(self.value) <  25:
-                self.value += chr(char_code).upper()   
+            if games.keyboard.is_pressed(char_code) and \
+               self.time_remain == 0 and len(self.value) < 25:
+                self.value += chr(char_code).upper()
                 self.time_remain = self.delay
         # Enter digits
         for char_code in numbers:
-            if games.keyboard.is_pressed(char_code) and self.time_remain == 0 and len(self.value) <  25:
-                self.value += chr(char_code).upper()   
+            if games.keyboard.is_pressed(char_code) and \
+               self.time_remain == 0 and len(self.value) < 25:
+                self.value += chr(char_code).upper()
                 self.time_remain = self.delay
         # Enter backspace
-        if games.keyboard.is_pressed(games.K_BACKSPACE) and self.time_remain == 0 and len(self.value) > 17:
+        if games.keyboard.is_pressed(games.K_BACKSPACE) and \
+           self.time_remain == 0 and len(self.value) > 17:
             self.value = self.value[:-1]
             self.time_remain = self.delay
         # Enter return
@@ -300,10 +304,10 @@ class Username(games.Text):
             self.destroy()
 
             top_players = getTop(self.filename)
-            scores = Scores(my_score = self.score,
-                            top_players = top_players,
-                            size = 60,
-                            color = color.black)
+            scores = Scores(my_score=self.score,
+                            top_players=top_players,
+                            size=60,
+                            color=color.black)
             scores.show_top()
 
 
@@ -320,46 +324,46 @@ class Scores():
         """ Display top scores """
         for i in range(len(self.top_players)):
             # Add "Top players" phrase on the screen
-            phrase = games.Text(value = "TOP PLAYERS",
-                                size = self.size,
-                                color = color.red,
-                                x = games.screen.width/2,
-                                y = 70)
+            phrase = games.Text(value="TOP PLAYERS",
+                                size=self.size,
+                                color=color.red,
+                                x=games.screen.width/2,
+                                y=70)
             games.screen.add(phrase)
             # Add player's name on the screen
-            player = games.Text(value = self.top_players[i][0],
-                                size = self.size,
-                                color = self.color,
-                                x = 250,
-                                y = 150 + 50*i)
+            player = games.Text(value=self.top_players[i][0],
+                                size=self.size,
+                                color=self.color,
+                                x=250,
+                                y=150+50*i)
             games.screen.add(player)
             # Add score on the screen
-            score = games.Text(value = self.top_players[i][1],
-                               size = self.size,
-                               color = self.color,
-                               x = 450,
-                               y = 150 + 50*i)
+            score = games.Text(value=self.top_players[i][1],
+                               size=self.size,
+                               color=self.color,
+                               x=450,
+                               y=150+50*i)
             games.screen.add(score)
             # Add your name on the screen
-            label = games.Text(value = "Your score: ",
-                               size = self.size,
-                               color = self.color,
-                               x = 250,
-                               y = 330)
+            label = games.Text(value="Your score: ",
+                               size=self.size,
+                               color=self.color,
+                               x=250,
+                               y=330)
             games.screen.add(label)
             # Add your score on the screen
-            my_points = games.Text(value = self.my_score,
-                                   size = self.size,
-                                   color = self.color,
-                                   x = 450,
-                                   y = 330)
+            my_points = games.Text(value=self.my_score,
+                                   size=self.size,
+                                   color=self.color,
+                                   x=450,
+                                   y=330)
             games.screen.add(my_points)
             # Add <press Esc to exit> label
-            label = games.Text(value = "<press Esc to exit>",
-                               size = 40,
-                               color = self.color,
-                               x = games.screen.width/2,
-                               y = 410)
+            label = games.Text(value="<press Esc to exit>",
+                               size=40,
+                               color=self.color,
+                               x=games.screen.width/2,
+                               y=410)
             games.screen.add(label)
 
 
@@ -371,7 +375,9 @@ def getTop(filename):
             player = player[:-1]
             temp = [player.split()[0], player.split()[1]]
             scores_arr.append(temp)
-    top3players = sorted(scores_arr, key=operator.itemgetter(1), reverse=True)[:3]
+    top3players = sorted(scores_arr,
+                         key=operator.itemgetter(1),
+                         reverse=True)[:3]
     return top3players
 
 
@@ -384,23 +390,23 @@ class Game():
 
         # cheate list of asteroids
         self.asteroids = []
-        
+
         # load sound for level advance
         self.sound = games.load_sound("sounds/level.wav")
-        
+
         # create score
-        self.score = games.Text(value = 0,
-                                size = 30,
-                                color = color.white,
-                                top = 5,
-                                right = games.screen.width - 19,
-                                is_collideable = False)
+        self.score = games.Text(value=0,
+                                size=30,
+                                color=color.white,
+                                top=5,
+                                right=games.screen.width-19,
+                                is_collideable=False)
         games.screen.add(self.score)
-        
+
         # create player's ship
-        self.ship = Ship(game = self,
-                         x = games.screen.width / 2,
-                         y = games.screen.height / 2)
+        self.ship = Ship(game=self,
+                         x=games.screen.width/2,
+                         y=games.screen.height/2)
         games.screen.add(self.ship)
 
     def play(self):
@@ -445,7 +451,7 @@ class Game():
             # wrap around screen, if necessary
             x %= games.screen.width
             y %= games.screen.height
-       
+
             # create the asteroid
             if i % 2 == 0:
                 size = Asteroid.LARGE
@@ -453,21 +459,21 @@ class Game():
             else:
                 size = Asteroid.POWERFUL
                 lifes = 3
-            new_asteroid = Asteroid(game = self,
-                                    x = x, y = y,
-                                    size = size,
-                                    lifes = lifes)
+            new_asteroid = Asteroid(game=self,
+                                    x=x, y=y,
+                                    size=size,
+                                    lifes=lifes)
             games.screen.add(new_asteroid)
             self.asteroids.append(new_asteroid)
 
             # display level number
-            level_message = games.Message(value = "Level " + str(self.level),
-                                          size = 40,
-                                          color = color.yellow,
-                                          x = games.screen.width / 2,
-                                          y = games.screen.height / 10,
-                                          lifetime = 3 * games.screen.fps,
-                                          is_collideable = False)
+            level_message = games.Message(value="Level "+str(self.level),
+                                          size=40,
+                                          color=color.yellow,
+                                          x=games.screen.width/2,
+                                          y=games.screen.height/10,
+                                          lifetime=3*games.screen.fps,
+                                          is_collideable=False)
             games.screen.add(level_message)
 
             # play new level sound (except at first level)
@@ -484,21 +490,21 @@ class Game():
             asteroid.totally_die()
 
         # show 'Game over' for 1 second
-        end_message = games.Message(value = "Game over",
-                                    size = 90,
-                                    color = color.red,
-                                    x = games.screen.width / 2,
-                                    y = games.screen.height / 2,
-                                    lifetime = 1 * games.screen.fps,
-                                    after_death = self.records,
-                                    is_collideable = False)
+        end_message = games.Message(value="Game over",
+                                    size=90,
+                                    color=color.red,
+                                    x=games.screen.width/2,
+                                    y=games.screen.height/2,
+                                    lifetime=1*games.screen.fps,
+                                    after_death=self.records,
+                                    is_collideable=False)
         games.screen.add(end_message)
 
     def records(self):
         """ Enter player's name and display top 3 players """
-        username = Username(score = str(self.score.value),
-                            filename = 'database/scores.txt',
-                            value = "Enter your name: ")
+        username = Username(score=str(self.score.value),
+                            filename="database/scores.txt",
+                            value="Enter your name: ")
         games.screen.add(username)
 
 
@@ -508,4 +514,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
