@@ -346,13 +346,13 @@ class Game():
         if games.keyboard.is_pressed(games.K_m):
             games.end()
         self.score = games.Message(value = input_record,
-                                   size = 80,
-                                   color = color.blue,
-                                   x = games.screen.width / 2,
-                                   y = games.screen.height / 2 - 50,
-                                   lifetime = 1 * games.screen.fps,
-                                   after_death = games.screen.quit,
-                                   is_collideable = False)
+                                  size = 80,
+                                  color = color.blue,
+                                  x = games.screen.width / 2,
+                                  y = games.screen.height / 2 - 50,
+                                  lifetime = 1 * games.screen.fps,
+                                  after_death = games.screen.quit,
+                                  is_collideable = False)
         games.screen.add(self.score)
 
 
