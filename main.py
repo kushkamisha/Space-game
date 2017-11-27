@@ -5,6 +5,7 @@
 import math, random
 from livewires import games, color
 
+
 games.init(screen_width = 640, screen_height = 480, fps = 50)
 
 class Wrapper(games.Sprite):
@@ -344,13 +345,14 @@ class Game():
         input_record = "Player's score: " + str(self.score.value)
         if games.keyboard.is_pressed(games.K_m):
             games.end()
-        self.score = games.Text(value = input_record,
-                                  size = 80,
-                                  color = color.blue,
-                                  x = games.screen.width / 2,
-                                  y = games.screen.height / 2 - 50,
-                                  # lifetime = 3 * games.screen.fps,
-                                  is_collideable = False)
+        self.score = games.Message(value = input_record,
+                                   size = 80,
+                                   color = color.blue,
+                                   x = games.screen.width / 2,
+                                   y = games.screen.height / 2 - 50,
+                                   lifetime = 1 * games.screen.fps,
+                                   after_death = games.screen.quit,
+                                   is_collideable = False)
         games.screen.add(self.score)
 
 
