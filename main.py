@@ -373,11 +373,15 @@ def getTop(filename):
     with open(filename) as scores:
         for player in scores:
             player = player[:-1]
-            temp = [player.split()[0], player.split()[1]]
+            temp = [player.split()[0], int(player.split()[1])]
             scores_arr.append(temp)
-    top3players = sorted(scores_arr,
-                         key=operator.itemgetter(1),
-                         reverse=True)[:3]
+    top3players_int = sorted(scores_arr,
+                             key=operator.itemgetter(1),
+                             reverse=True)[:3]
+    top3players = []
+    for i in range(len(top3players_int)):
+        top3players.append([top3players_int[i][0], str(top3players_int[i][1])])
+
     return top3players
 
 
