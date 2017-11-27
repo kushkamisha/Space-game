@@ -2,7 +2,9 @@
 # Astrocrash game #
 # # # # # # # # # #
 
-import math, random
+import math
+import random
+import operator
 from livewires import games, color
 
 
@@ -69,6 +71,7 @@ class Asteroid(Wrapper):
         """ Initialize sprite with asteroid image """
         self.lifes = lifes
         Asteroid.total += 1
+        self.asteroids = []
         
         super(Asteroid, self).__init__(
             image = Asteroid.images[size],
@@ -95,12 +98,23 @@ class Asteroid(Wrapper):
                                         size = self.size - 1,
                                         lifes = 1)
                 games.screen.add(new_asteroid)
+                self.asteroids.append(new_asteroid)
 
         # if all asteroids are gone, advance to next level    
         if Asteroid.total == 0:
             self.game.advance()
-                
+
         super(Asteroid, self).die()
+
+    def totally_die(self):
+        """
+        Destroys asteroid without adding smaller asteroids on the screen 
+        """     
+        super(Asteroid, self).die()
+
+    def get_asteroids(self):
+        """ Returns list of asteroids on the screen """
+        return self.asteroids
 
 
 class Ship(Collider):
@@ -232,12 +246,144 @@ class Explosion(games.Animation):
         Explosion.sound.play()
 
 
+## 
+# Top scores after end of the game
+##
+class Username(games.Text):
+    """ A moving ship. """
+    def __init__(self, score,
+                 filename,
+                 value, size=60,
+                 color=color.black,
+                 x=games.screen.width/2,
+                 y=games.screen.height/2, 
+                 delay=5):
+        
+        super(Username, self).__init__(
+            value = value,
+            size = size,
+            color = color,
+            x = x, y = y)
+
+        self.filename = filename
+        self.score = str(score)
+        self.delay = delay
+        self.time_remain = delay
+
+    def update(self):
+        """ Move ship based on keys pressed. """
+        if (self.time_remain != 0):
+            self.time_remain -= 1
+
+        alphabet = [ch_code for ch_code in range(97, 122)]
+        numbers = [ch_code for ch_code in range(48, 58)]
+
+        # Enter letters
+        for char_code in alphabet:
+            if games.keyboard.is_pressed(char_code) and self.time_remain == 0 and len(self.value) <  25:
+                self.value += chr(char_code).upper()   
+                self.time_remain = self.delay
+        # Enter digits
+        for char_code in numbers:
+            if games.keyboard.is_pressed(char_code) and self.time_remain == 0 and len(self.value) <  25:
+                self.value += chr(char_code).upper()   
+                self.time_remain = self.delay
+        # Enter backspace
+        if games.keyboard.is_pressed(games.K_BACKSPACE) and self.time_remain == 0 and len(self.value) > 17:
+            self.value = self.value[:-1]
+            self.time_remain = self.delay
+        # Enter return
+        if games.keyboard.is_pressed(games.K_RETURN):
+            # Save score to database and display top scores
+            with open(self.filename, 'a') as f:
+                f.write(self.value[17:] + ' ' + self.score + '\n')
+            self.destroy()
+
+            top_players = getTop(self.filename)
+            scores = Scores(my_score = self.score,
+                            top_players = top_players,
+                            size = 60,
+                            color = color.black)
+            scores.show_top()
+
+
+class Scores():
+    """ Top player's score """
+    def __init__(self, my_score, top_players, size, color):
+        """ Init scores filename """
+        self.my_score = my_score
+        self.top_players = top_players
+        self.size = size
+        self.color = color
+
+    def show_top(self):
+        """ Display top scores """
+        for i in range(len(self.top_players)):
+            # Add "Top players" phrase on the screen
+            phrase = games.Text(value = "TOP PLAYERS",
+                                size = self.size,
+                                color = color.red,
+                                x = games.screen.width/2,
+                                y = 70)
+            games.screen.add(phrase)
+            # Add player's name on the screen
+            player = games.Text(value = self.top_players[i][0],
+                                size = self.size,
+                                color = self.color,
+                                x = 250,
+                                y = 150 + 50*i)
+            games.screen.add(player)
+            # Add score on the screen
+            score = games.Text(value = self.top_players[i][1],
+                               size = self.size,
+                               color = self.color,
+                               x = 450,
+                               y = 150 + 50*i)
+            games.screen.add(score)
+            # Add your name on the screen
+            label = games.Text(value = "Your score: ",
+                               size = self.size,
+                               color = self.color,
+                               x = 250,
+                               y = 330)
+            games.screen.add(label)
+            # Add your score on the screen
+            my_points = games.Text(value = self.my_score,
+                                   size = self.size,
+                                   color = self.color,
+                                   x = 450,
+                                   y = 330)
+            games.screen.add(my_points)
+            # Add <press Esc to exit> label
+            label = games.Text(value = "<press Esc to exit>",
+                               size = 40,
+                               color = self.color,
+                               x = games.screen.width/2,
+                               y = 410)
+            games.screen.add(label)
+
+
+def getTop(filename):
+    """ Get top 3 players from file """
+    scores_arr = []
+    with open(filename) as scores:
+        for player in scores:
+            player = player[:-1]
+            temp = [player.split()[0], player.split()[1]]
+            scores_arr.append(temp)
+    top3players = sorted(scores_arr, key=operator.itemgetter(1), reverse=True)[:3]
+    return top3players
+
+
 class Game():
     """ The game """
     def __init__(self):
         """ Initialize game object """
         # set level
         self.level = 0
+
+        # cheate list of asteroids
+        self.asteroids = []
         
         # load sound for level advance
         self.sound = games.load_sound("sounds/level.wav")
@@ -312,6 +458,7 @@ class Game():
                                     size = size,
                                     lifes = lifes)
             games.screen.add(new_asteroid)
+            self.asteroids.append(new_asteroid)
 
             # display level number
             level_message = games.Message(value = "Level " + str(self.level),
@@ -329,6 +476,13 @@ class Game():
 
     def end(self):
         """ Ends game """
+        # Destroy all asteroids on the screen
+        for asteroid in self.asteroids:
+            children = asteroid.get_asteroids()
+            for child in children:
+                child.totally_die()
+            asteroid.totally_die()
+
         # show 'Game over' for 1 second
         end_message = games.Message(value = "Game over",
                                     size = 90,
@@ -341,19 +495,11 @@ class Game():
         games.screen.add(end_message)
 
     def records(self):
-        """ Record table """
-        input_record = "Player's score: " + str(self.score.value)
-        if games.keyboard.is_pressed(games.K_m):
-            games.end()
-        self.score = games.Message(value = input_record,
-                                  size = 80,
-                                  color = color.blue,
-                                  x = games.screen.width / 2,
-                                  y = games.screen.height / 2 - 50,
-                                  lifetime = 1 * games.screen.fps,
-                                  after_death = games.screen.quit,
-                                  is_collideable = False)
-        games.screen.add(self.score)
+        """ Enter player's name and display top 3 players """
+        username = Username(score = str(self.score.value),
+                            filename = 'database/scores.txt',
+                            value = "Enter your name: ")
+        games.screen.add(username)
 
 
 def main():
