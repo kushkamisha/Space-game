@@ -266,6 +266,7 @@ class Username(games.Text):
                                        color=color,
                                        x=x, y=y)
 
+        self.default_length = len(self.value)
         self.filename = filename
         self.score = str(score)
         self.delay = delay
@@ -299,16 +300,24 @@ class Username(games.Text):
         # Enter return
         if games.keyboard.is_pressed(games.K_RETURN):
             # Save score to database and display top scores
-            with open(self.filename, 'a') as f:
-                f.write(self.value[17:] + ' ' + self.score + '\n')
-            self.destroy()
+            # If username is empty set is to PLAYER
+            if (len(self.value) == self.default_length):
+                self.value += 'PLAYER'
+            self.you_lose()
 
-            top_players = getTop(self.filename)
-            scores = Scores(my_score=self.score,
-                            top_players=top_players,
-                            size=60,
-                            color=color.black)
-            scores.show_top()
+    def you_lose(self):
+        """ Save score to database and display top scores """
+        with open(self.filename, 'a') as f:
+            # Save score to the file
+            f.write(self.value[17:] + ' ' + self.score + '\n')
+        self.destroy()
+
+        top_players = getTop(self.filename)
+        scores = Scores(my_score=self.score,
+                        top_players=top_players,
+                        size=60,
+                        color=color.black)
+        scores.show_top()
 
 
 class Scores():
