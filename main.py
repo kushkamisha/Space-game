@@ -9,7 +9,7 @@ from livewires import games, color
 
 
 games.init(screen_width=640, screen_height=480, fps=50)
-
+DELAY = 3
 
 class Wrapper(games.Sprite):
     """ Sprite, which wraps around the screen """
@@ -78,9 +78,9 @@ class Asteroid(Wrapper):
             image=Asteroid.images[size],
             x=x, y=y,
             dx=random.choice([-1, 1]) * Asteroid.SPEED *
-            random.random() / size * 2.5,
+            random.random() / size * 2.5 / DELAY,
             dy=random.choice([-1, 1]) * Asteroid.SPEED *
-            random.random() / size * 2.5)
+            random.random() / size * 2.5 / DELAY)
 
         self.game = game
         self.size = size
@@ -124,10 +124,10 @@ class Ship(Collider):
     """ Player's ship """
     image = games.load_image("images/ship.bmp")
     sound = games.load_sound("sounds/thrust.wav")
-    ROTATION_STEP = 5
-    VELOCITY_STEP = .07
-    MISSILE_DELAY = 20
-    VELOCITY_MAX = 4
+    ROTATION_STEP = 5 / DELAY
+    VELOCITY_STEP = .07 / DELAY
+    MISSILE_DELAY = 20 * DELAY
+    VELOCITY_MAX = 4 / DELAY
 
     def __init__(self, game, x, y):
         """ Initialize space ship sprite """
@@ -191,8 +191,8 @@ class Missile(Collider):
     image = games.load_image("images/missile.bmp")
     sound = games.load_sound("sounds/missile.wav")
     BUFFER = 40
-    VELOCITY_FACTOR = 12
-    LIFETIME = 30
+    VELOCITY_FACTOR = 12 / DELAY
+    LIFETIME = 30 * DELAY
 
     def __init__(self, ship_x, ship_y, ship_angle):
         """ Initialize sprite with missile image """
@@ -243,7 +243,7 @@ class Explosion(games.Animation):
     def __init__(self, x, y):
         super(Explosion, self).__init__(images=Explosion.images,
                                         x=x, y=y,
-                                        repeat_interval=2, n_repeats=1,
+                                        repeat_interval=2 * DELAY, n_repeats=1,
                                         is_collideable=False)
         Explosion.sound.play()
 
@@ -269,8 +269,8 @@ class Username(games.Text):
         self.default_length = len(self.value)
         self.filename = filename
         self.score = str(score)
-        self.delay = delay
-        self.time_remain = delay
+        self.delay = delay * DELAY
+        self.time_remain = delay *DELAY
 
     def update(self):
         """ Move ship based on keys pressed. """
@@ -508,7 +508,7 @@ class Game():
                                     color=color.red,
                                     x=games.screen.width/2,
                                     y=games.screen.height/2,
-                                    lifetime=1*games.screen.fps,
+                                    lifetime=1*games.screen.fps * DELAY,
                                     after_death=self.records,
                                     is_collideable=False)
         games.screen.add(end_message)
