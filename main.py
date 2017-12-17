@@ -249,7 +249,7 @@ class Explosion(games.Animation):
 
 
 class Scores(games.Text):
-    """ Save/display top scores and username after end of the game. """
+    """ Save/display top scores after end of the game. """
     def __init__(self, score,
                  filename,
                  value, size=60,
@@ -374,11 +374,6 @@ class Scores(games.Text):
             # Save score to the file
             f.write(self.value[17:] + ' ' + self.score + '\n')
         self.destroy()
-
-        # scores = Scores(my_score=self.score,
-        #                 filename=self.filename,
-        #                 size=60,
-        #                 color=color.black)
         self.show_top()
 
 
@@ -504,8 +499,8 @@ class Game():
     def records(self):
         """ Enter player's name and display top 3 players """
         scores = Scores(score=str(self.score.value),
-                            filename="database/scores.txt",
-                            value="Enter your name: ")
+                        filename="database/scores.txt",
+                        value="Enter your name: ")
         games.screen.add(scores)
 
 
