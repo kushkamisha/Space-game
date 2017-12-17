@@ -9,7 +9,7 @@ from livewires import games, color
 
 
 games.init(screen_width=640, screen_height=480, fps=50)
-DELAY = 3
+DELAY = 1
 
 class Wrapper(games.Sprite):
     """ Sprite, which wraps around the screen """
@@ -248,11 +248,8 @@ class Explosion(games.Animation):
         Explosion.sound.play()
 
 
-##
-# Top scores after end of the game
-##
-class Username(games.Text):
-    """ A moving ship. """
+class Scores(games.Text):
+    """ Save/display top scores and username after end of the game. """
     def __init__(self, score,
                  filename,
                  value, size=60,
@@ -261,7 +258,7 @@ class Username(games.Text):
                  y=games.screen.height/2,
                  delay=5):
 
-        super(Username, self).__init__(value=value,
+        super(Scores, self).__init__(value=value,
                                        size=size,
                                        color=color,
                                        x=x, y=y)
@@ -270,7 +267,8 @@ class Username(games.Text):
         self.filename = filename
         self.score = str(score)
         self.delay = delay * DELAY
-        self.time_remain = delay *DELAY
+        self.time_remain = delay * DELAY
+        self.top_players = []
 
     def update(self):
         """ Move ship based on keys pressed. """
@@ -305,32 +303,27 @@ class Username(games.Text):
                 self.value += 'PLAYER'
             self.you_lose()
 
-    def you_lose(self):
-        """ Save score to database and display top scores """
-        with open(self.filename, 'a') as f:
-            # Save score to the file
-            f.write(self.value[17:] + ' ' + self.score + '\n')
-        self.destroy()
+    def get_top(self):
+            """ Get top 3 players from file """
+            scores_arr = []
+            with open(self.filename) as scores:
+                for player in scores:
+                    player = player[:-1]
+                    temp = [player.split()[0], int(player.split()[1])]
+                    scores_arr.append(temp)
+            top3players_int = sorted(scores_arr,
+                                     key=operator.itemgetter(1),
+                                     reverse=True)[:3]
+            top3players = []
+            for i in range(len(top3players_int)):
+                top3players.append([top3players_int[i][0], str(top3players_int[i][1])])
 
-        top_players = getTop(self.filename)
-        scores = Scores(my_score=self.score,
-                        top_players=top_players,
-                        size=60,
-                        color=color.black)
-        scores.show_top()
-
-
-class Scores():
-    """ Top player's score """
-    def __init__(self, my_score, top_players, size, color):
-        """ Init scores filename """
-        self.my_score = my_score
-        self.top_players = top_players
-        self.size = size
-        self.color = color
+            return top3players
 
     def show_top(self):
         """ Display top scores """
+        self.top_players = self.get_top()
+
         for i in range(len(self.top_players)):
             # Add "Top players" phrase on the screen
             phrase = games.Text(value="TOP PLAYERS",
@@ -361,7 +354,7 @@ class Scores():
                                y=330)
             games.screen.add(label)
             # Add your score on the screen
-            my_points = games.Text(value=self.my_score,
+            my_points = games.Text(value=self.score,
                                    size=self.size,
                                    color=self.color,
                                    x=450,
@@ -375,23 +368,18 @@ class Scores():
                                y=410)
             games.screen.add(label)
 
+    def you_lose(self):
+        """ Save score to database and display top scores """
+        with open(self.filename, 'a') as f:
+            # Save score to the file
+            f.write(self.value[17:] + ' ' + self.score + '\n')
+        self.destroy()
 
-def getTop(filename):
-    """ Get top 3 players from file """
-    scores_arr = []
-    with open(filename) as scores:
-        for player in scores:
-            player = player[:-1]
-            temp = [player.split()[0], int(player.split()[1])]
-            scores_arr.append(temp)
-    top3players_int = sorted(scores_arr,
-                             key=operator.itemgetter(1),
-                             reverse=True)[:3]
-    top3players = []
-    for i in range(len(top3players_int)):
-        top3players.append([top3players_int[i][0], str(top3players_int[i][1])])
-
-    return top3players
+        # scores = Scores(my_score=self.score,
+        #                 filename=self.filename,
+        #                 size=60,
+        #                 color=color.black)
+        self.show_top()
 
 
 class Game():
@@ -515,10 +503,10 @@ class Game():
 
     def records(self):
         """ Enter player's name and display top 3 players """
-        username = Username(score=str(self.score.value),
+        scores = Scores(score=str(self.score.value),
                             filename="database/scores.txt",
                             value="Enter your name: ")
-        games.screen.add(username)
+        games.screen.add(scores)
 
 
 def main():
